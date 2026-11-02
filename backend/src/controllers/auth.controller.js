@@ -70,9 +70,14 @@ async function register(req, res) {
         });
 
         return res.status(201).json({
-            message: "register successfully"
+            message: "User registered successfully"
         });
     } catch (error) {
+        if (error && error.code === 11000) {
+            return res.status(400).json({
+                message: "Username or email already exists"
+            });
+        }
         console.error("Register error:", error);
         return res.status(500).json({
             message: "Something went wrong"

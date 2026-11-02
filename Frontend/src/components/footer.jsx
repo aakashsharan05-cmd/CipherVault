@@ -14,7 +14,7 @@ const Footer = () => {
               Cipher<span className="text-indigo-400">Vault</span>
             </div>
             <p className="text-xs text-slate-400">
-              Zero-knowledge credential protection
+              Server-side AES-256-GCM encrypted vault
             </p>
           </div>
         </div>
@@ -22,7 +22,7 @@ const Footer = () => {
         {/* Security badge */}
         <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-800/80 border border-slate-700/60 px-3.5 py-1.5 rounded-full">
           <FaLock className="text-indigo-400 text-[10px]" />
-          <span>Client-Server AES-256-GCM Encrypted</span>
+          <span>AES-256-GCM Server-Side Encrypted</span>
         </div>
 
         {/* Links & copyright */}

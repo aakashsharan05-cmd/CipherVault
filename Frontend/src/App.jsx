@@ -14,10 +14,12 @@ import { API_URL } from "./config";
 
 function App() {
   const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  // On page load (or refresh), check if the user is already logged in
-  // by calling the profile endpoint. The cookie is sent automatically.
+  // Check session persistence on mount/refresh
   useEffect(() => {
+    let isMounted = true;
+
     const fetchProfile = async () => {
       try {
         const res = await fetch(`${API_URL}/api/auth/profile`, {
@@ -27,15 +29,24 @@ function App() {
 
         if (res.ok) {
           const data = await res.json();
-          setUser(data.user);
+          if (isMounted) {
+            setUser(data.user);
+          }
         }
-        // If 401, user is not logged in — that's fine, user stays null
       } catch {
-        // Network error — user stays null
+        // Network error or unauthenticated session
+      } finally {
+        if (isMounted) {
+          setAuthLoading(false);
+        }
       }
     };
 
     fetchProfile();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
@@ -60,11 +71,14 @@ function App() {
         theme="dark"
       />
 
-      <Navbar user={user} setUser={setUser} />
+      <Navbar user={user} setUser={setUser} authLoading={authLoading} />
 
       <main className="flex-1 flex flex-col">
         <Routes>
-          <Route path="/" element={<Manager />} />
+          <Route
+            path="/"
+            element={<Manager user={user} authLoading={authLoading} />}
+          />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
         </Routes>

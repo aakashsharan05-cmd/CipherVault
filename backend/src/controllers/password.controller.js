@@ -18,6 +18,15 @@ function validatePasswordInput(data) {
     const trimmedUrl = url.trim();
     const trimmedUsername = username.trim();
 
+    const lowerUrl = trimmedUrl.toLowerCase();
+    if (
+        lowerUrl.startsWith("javascript:") ||
+        lowerUrl.startsWith("data:") ||
+        lowerUrl.startsWith("vbscript:")
+    ) {
+        return null;
+    }
+
     if (
         trimmedTitle.length === 0 || trimmedTitle.length > 100 ||
         trimmedUrl.length === 0 || trimmedUrl.length > 2048 ||

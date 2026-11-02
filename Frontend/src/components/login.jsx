@@ -11,6 +11,7 @@ const Login = ({ setUser }) => {
     email: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({
@@ -22,11 +23,15 @@ const Login = ({ setUser }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (form.email.trim() === "" || form.password.trim() === "") {
+    if (isLoading) return;
+
+    const trimmedEmail = form.email.trim();
+    if (!trimmedEmail || !form.password) {
       toast.warn("Please enter both email and password.");
       return;
     }
 
+    setIsLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
@@ -35,7 +40,7 @@ const Login = ({ setUser }) => {
         },
         credentials: "include",
         body: JSON.stringify({
-          email: form.email,
+          email: trimmedEmail,
           password: form.password,
         }),
       });
@@ -59,6 +64,8 @@ const Login = ({ setUser }) => {
       navigate("/");
     } catch (error) {
       toast.error(error.message || "Login failed. Please check your credentials.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,7 +110,8 @@ const Login = ({ setUser }) => {
                   placeholder="name@example.com"
                   value={form.email}
                   onChange={handleChange}
-                  className="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 pl-10 pr-4 py-3 text-slate-100 placeholder-slate-400 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 focus:outline-none transition-all"
+                  disabled={isLoading}
+                  className="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 pl-10 pr-4 py-3 text-slate-100 placeholder-slate-400 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 focus:outline-none transition-all disabled:opacity-50"
                   autoComplete="email"
                 />
               </div>
@@ -127,7 +135,8 @@ const Login = ({ setUser }) => {
                   placeholder="••••••••••••"
                   value={form.password}
                   onChange={handleChange}
-                  className="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 pl-10 pr-4 py-3 text-slate-100 placeholder-slate-400 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 focus:outline-none transition-all"
+                  disabled={isLoading}
+                  className="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 pl-10 pr-4 py-3 text-slate-100 placeholder-slate-400 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 focus:outline-none transition-all disabled:opacity-50"
                   autoComplete="current-password"
                 />
               </div>
@@ -135,10 +144,17 @@ const Login = ({ setUser }) => {
 
             <button
               type="submit"
-              className="w-full mt-2 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+              disabled={isLoading}
+              className="w-full mt-2 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900"
             >
-              <span>Unlock Vault</span>
-              <FaArrowRight className="text-xs" />
+              {isLoading ? (
+                <span>Authenticating...</span>
+              ) : (
+                <>
+                  <span>Unlock Vault</span>
+                  <FaArrowRight className="text-xs" />
+                </>
+              )}
             </button>
           </form>
 

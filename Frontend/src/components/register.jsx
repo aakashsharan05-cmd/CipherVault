@@ -11,6 +11,7 @@ const Register = () => {
     email: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({
@@ -21,6 +22,8 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (isLoading) return;
 
     const trimmedUsername = form.username.trim();
     const trimmedEmail = form.email.trim();
@@ -46,6 +49,7 @@ const Register = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
@@ -62,8 +66,8 @@ const Register = () => {
       const data = await res.json();
 
       if (res.ok) {
-        toast.success("Account created successfully! You can now log in.");
-        navigate("/");
+        toast.success("Account created successfully! Please sign in.");
+        navigate("/login");
 
         setForm({
           username: "",
@@ -75,6 +79,8 @@ const Register = () => {
       }
     } catch (error) {
       toast.error(error.message || "Network error during registration.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -95,7 +101,7 @@ const Register = () => {
               Create Your Vault
             </h1>
             <p className="text-sm text-slate-400 mt-2">
-              Get started with zero-knowledge, encrypted credential storage
+              Get started with AES-256-GCM encrypted credential storage
             </p>
           </div>
 
@@ -119,7 +125,8 @@ const Register = () => {
                   placeholder="johndoe"
                   value={form.username}
                   onChange={handleChange}
-                  className="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 pl-10 pr-4 py-3 text-slate-100 placeholder-slate-400 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 focus:outline-none transition-all"
+                  disabled={isLoading}
+                  className="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 pl-10 pr-4 py-3 text-slate-100 placeholder-slate-400 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 focus:outline-none transition-all disabled:opacity-50"
                   autoComplete="username"
                 />
               </div>
@@ -143,7 +150,8 @@ const Register = () => {
                   placeholder="name@example.com"
                   value={form.email}
                   onChange={handleChange}
-                  className="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 pl-10 pr-4 py-3 text-slate-100 placeholder-slate-400 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 focus:outline-none transition-all"
+                  disabled={isLoading}
+                  className="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 pl-10 pr-4 py-3 text-slate-100 placeholder-slate-400 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 focus:outline-none transition-all disabled:opacity-50"
                   autoComplete="email"
                 />
               </div>
@@ -164,10 +172,11 @@ const Register = () => {
                   id="register-password"
                   type="password"
                   name="password"
-                  placeholder="Create a strong password"
+                  placeholder="At least 8 characters"
                   value={form.password}
                   onChange={handleChange}
-                  className="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 pl-10 pr-4 py-3 text-slate-100 placeholder-slate-400 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 focus:outline-none transition-all"
+                  disabled={isLoading}
+                  className="w-full rounded-xl bg-slate-950/80 border border-slate-700/80 pl-10 pr-4 py-3 text-slate-100 placeholder-slate-400 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 focus:outline-none transition-all disabled:opacity-50"
                   autoComplete="new-password"
                 />
               </div>
@@ -175,10 +184,17 @@ const Register = () => {
 
             <button
               type="submit"
-              className="w-full mt-2 flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-500 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+              disabled={isLoading}
+              className="w-full mt-2 flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-500 hover:from-violet-500 hover:to-indigo-500 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900"
             >
-              <span>Create Free Account</span>
-              <FaArrowRight className="text-xs" />
+              {isLoading ? (
+                <span>Creating Account...</span>
+              ) : (
+                <>
+                  <span>Create Free Account</span>
+                  <FaArrowRight className="text-xs" />
+                </>
+              )}
             </button>
           </form>
 

@@ -1,115 +1,110 @@
 # 🔐 CipherVault — Secure Password Manager
 
-CipherVault is a full-stack MERN password manager that helps users securely store and manage their website credentials. It uses **AES-256-GCM encryption** to protect stored passwords, **bcrypt** for account password hashing, and **JWT authentication with HTTP-only cookies** to manage user sessions.
+CipherVault is a production-grade full-stack MERN password manager designed to help users securely store and manage their website credentials. It leverages **server-side AES-256-GCM authenticated encryption** to protect stored passwords, **bcryptjs** for credential hashing, **JWT authentication with HTTP-only cookies** for session control, **Helmet** for HTTP security headers, and **rate limiting** to guard against brute-force attacks.
 
-The application provides a secure, user-specific vault with credential management, search, password visibility controls, and a responsive interface.
+> ℹ️ **Architectural Note:** CipherVault uses **server-side authenticated encryption (AES-256-GCM)** with user-isolated vaults. It is **not** a zero-knowledge password manager; encryption keys and decryption operations reside server-side in protected environment variables.
+
+---
 
 ## ✨ Features
 
-- **User Authentication:** Register, login, logout, and persistent sessions.
-- **Encrypted Password Vault:** Encrypts stored website passwords using AES-256-GCM.
-- **Credential Management:** Create, read, update, and delete saved credentials.
-- **Instant Search:** Search saved credentials by title, URL, or username.
-- **Show/Hide Passwords:** Reveal or conceal saved passwords individually.
-- **One-Click Copy:** Copy credentials to the clipboard.
-- **User-Specific Access:** Users can access and manage only their own saved credentials.
-- **Profile Dropdown:** View account information and logout.
-- **Responsive UI:** Dark-themed interface designed for desktop and mobile screens.
-- **Toast Notifications:** Feedback for user actions.
+- **User Authentication:** Registration, login, logout, and persistent session state with secure HTTP-only cookies.
+- **Server-Side AES-256-GCM Encryption:** Encrypts saved credentials with 96-bit random IVs and integrity authentication tags before persisting to MongoDB.
+- **Cryptographic Password Generator:** In-browser generator using `window.crypto.getRandomValues` with length customization (8–64 chars) and character set toggles (uppercase, lowercase, numbers, symbols).
+- **Password Strength Meter:** Real-time visual feedback analyzing entropy, character diversity, and length.
+- **Credential Management (CRUD):** Add, view, edit, and delete saved credentials with custom non-blocking confirmation modals.
+- **Instant Search & Filter:** Filter stored credentials instantaneously by site title, URL, or username.
+- **Interactive Show/Hide Passwords:** Toggle password visibility per entry.
+- **One-Click Clipboard Copy:** Instant credential copying with dynamic visual feedback.
+- **Strict Authorization & User Isolation:** All CRUD operations are scoped to the authenticated user's ID verified through JWT.
+- **Responsive & Modern Dark UI:** High-contrast, responsive interface built with React 19 and Tailwind CSS 4.
+- **Toast Notifications:** Smooth notifications via React Toastify for user actions and system feedback.
+
+---
 
 ## 🛠️ Tech Stack
 
 | Layer | Technologies |
 |---|---|
-| Frontend | React 19, Vite |
-| Styling | Tailwind CSS 4 |
-| Routing | React Router 7 |
-| UI Components | React Icons |
-| Notifications | React Toastify |
-| Backend | Node.js, Express 5 |
-| Database | MongoDB, Mongoose |
-| Authentication | JWT, bcryptjs, cookie-parser |
-| Encryption | Node.js Crypto module — AES-256-GCM |
-| Security | HTTP-only cookies, CORS, Helmet |
+| **Frontend** | React 19, Vite, Tailwind CSS 4, React Router 7, React Icons, React Toastify |
+| **Backend** | Node.js, Express 5, MongoDB, Mongoose |
+| **Authentication** | JWT (`jsonwebtoken`), `bcryptjs`, `cookie-parser` |
+| **Encryption** | Node.js Crypto (`aes-256-gcm`, 12-byte IV, 16-byte Auth Tag) |
+| **Security & Hardening** | `helmet`, `express-rate-limit`, HTTP-only SameSite cookies, CORS origin validation |
 
-## 🛡️ Security Design
+---
 
-### 1. AES-256-GCM Encryption
+## 🛡️ Security Architecture
 
-Saved website passwords are encrypted before being stored in MongoDB.
+### 1. AES-256-GCM Authenticated Encryption
+Saved website passwords are encrypted prior to being stored in the database:
+- **Algorithm:** `aes-256-gcm` (Galois/Counter Mode).
+- **Initialization Vector:** A unique, cryptographically random 12-byte (96-bit) IV generated per encryption via `crypto.randomBytes(12)`.
+- **Integrity Verification:** A 16-byte authentication tag is generated and stored with each ciphertext, preventing undetected tampering or bit-flipping attacks.
+- **Key Management:** Encrypted with a 256-bit (32-byte) hex key loaded exclusively via the `ENCRYPTION_KEY` environment variable. Never exposed to the frontend or committed to git.
 
-- Uses AES-256-GCM authenticated encryption.
-- Generates a fresh random 96-bit initialization vector (IV) for each encryption operation.
-- Stores the authentication tag with the encrypted credential.
-- Uses a 32-byte encryption key supplied through the `ENCRYPTION_KEY` environment variable.
-- The encryption key is not stored in the database or committed to the repository.
+### 2. Session Management & Cookies
+- User authentication tokens are stored in an `HttpOnly`, `SameSite` cookie, blocking malicious client-side JavaScript access (mitigating XSS token theft).
+- Production deployments enable the `secure: true` flag to mandate HTTPS transmission.
+- Shared cookie configuration helper ensures synchronized attributes between `res.cookie` on login and `res.clearCookie` on logout.
 
-### 2. Secure Account Authentication
+### 3. Rate Limiting & Denial of Service Protection
+- Public authentication routes (`/api/auth/login` and `/api/auth/register`) are protected by `express-rate-limit` (10 requests per 15-minute window per IP) to prevent automated credential stuffing and brute-force attacks.
 
-- User account passwords are hashed using bcrypt with a salt cost factor of 10.
-- JWT-based authentication is used for session management.
-- JWT is stored in an HTTP-only cookie.
-- The frontend does not store authentication tokens in localStorage.
-- Authentication middleware verifies the JWT before allowing access to protected routes.
+### 4. Input Validation & Injection Defense
+- Strict type validation ensures fields (`username`, `email`, `password`) are primitive strings, preventing NoSQL object injection attacks (e.g., `{"$ne": null}`).
+- Passwords enforce length boundaries (8–128 characters) and usernames enforce alphanumeric constraints (3–30 characters).
+- URL sanitization prevents malicious protocol injection (`javascript:`, `data:`, `vbscript:`).
 
-### 3. Authorization and User Isolation
+### 5. Architectural Disclosure
+CipherVault employs **server-side encryption**. Because the server holds the AES key to decrypt credentials for the authenticated user, this architecture is not zero-knowledge. Server environment security is essential.
 
-Every protected credential operation is scoped to the authenticated user.
-
-The server derives the user's identity from the verified JWT rather than trusting a user ID provided by the client.
-
-Update and delete operations verify both the credential ID and the owner ID, preventing users from modifying another user's saved credentials.
-
-### 4. Security Limitations
-
-CipherVault currently uses **server-side encryption and is not a zero-knowledge password manager**.
-
-The server holds the AES encryption key and decrypts saved credentials when returning them to the authenticated user. A compromise of the backend and its environment variables could expose stored vault data.
-
-A future zero-knowledge architecture could derive encryption keys from a user-controlled master password and perform encryption/decryption entirely in the browser.
+---
 
 ## 📁 Project Structure
 
 ```text
 CipherVault/
-├── backend/
-│   ├── server.js
-│   ├── .env.example
+├── Backend/
+│   ├── server.js                     # Server entry point & environment validation
+│   ├── package.json                  # Express 5, Mongoose, Helmet, Rate Limit
+│   ├── .env.example                  # Backend environment template
 │   └── src/
-│       ├── app.js
+│       ├── app.js                    # Express application configuration & middleware
 │       ├── db/
-│       │   └── db.js
+│       │   └── db.js                 # MongoDB connection handler
 │       ├── routes/
-│       │   └── auth.routes.js
+│       │   └── auth.routes.js        # Authentication & vault API routes
 │       ├── controllers/
-│       │   ├── auth.controller.js
-│       │   └── password.controller.js
+│       │   ├── auth.controller.js    # Register, login, logout, profile controllers
+│       │   └── password.controller.js# Vault CRUD controllers with ownership checks
 │       ├── middleware/
-│       │   └── auth.middleware.js
+│       │   └── auth.middleware.js    # JWT verification & route protection
 │       ├── models/
-│       │   ├── user.model.js
-│       │   └── password.model.js
-│       └── utlis/
-│           └── encryption.js
-├── public/
-├── src/
-│   ├── components/
-│   │   ├── manager.jsx
-│   │   ├── login.jsx
-│   │   ├── register.jsx
-│   │   ├── navbar.jsx
-│   │   └── footer.jsx
-│   ├── App.jsx
-│   ├── config.js
-│   └── main.jsx
-├── .env.example
+│       │   ├── user.model.js         # Mongoose User schema with unique indexes
+│       │   └── password.model.js     # Mongoose Encrypted Password schema
+│       └── utils/
+│           └── encryption.js         # AES-256-GCM encryption/decryption utilities
+├── Frontend/
+│   ├── index.html                    # Root HTML document
+│   ├── package.json                  # React 19, Vite, Tailwind CSS 4
+│   ├── vite.config.js                # Vite build configuration
+│   ├── .env.example                  # Frontend environment template
+│   └── src/
+│       ├── App.jsx                   # Main layout, route definitions, auth bootstrap
+│       ├── config.js                 # Centralized API endpoint configuration
+│       ├── main.jsx                  # React DOM root entry
+│       └── components/
+│           ├── navbar.jsx            # Responsive navigation & profile menu
+│           ├── footer.jsx            # Application footer & architecture note
+│           ├── manager.jsx           # Vault dashboard, generator, strength meter, CRUD
+│           ├── login.jsx             # Secure login form with validation
+│           └── register.jsx          # User registration form with validation
 ├── .gitignore
-├── index.html
-├── package.json
-├── package-lock.json
-├── vite.config.js
 └── README.md
 ```
+
+---
 
 ## 🚀 Getting Started
 
@@ -119,8 +114,9 @@ Follow these steps to run CipherVault locally.
 
 - Node.js 18 or later
 - npm
-- MongoDB (local installation or MongoDB Atlas)
-- Git
+- MongoDB (local service or MongoDB Atlas)
+
+---
 
 ### 1. Clone the Repository
 
@@ -129,111 +125,119 @@ git clone https://github.com/aakashsharan05-cmd/CipherVault.git
 cd CipherVault
 ```
 
-### 2. Install Frontend Dependencies
+---
 
-```bash
-npm install
-```
+### 2. Backend Setup
 
-### 3. Install Backend Dependencies
+Open a terminal and navigate to the `backend` directory:
 
 ```bash
 cd backend
 npm install
 ```
 
-### 4. Configure Environment Variables
+#### Configure Backend Environment Variables
 
-Create a `.env` file inside the `backend` directory.
+Create a `.env` file in the `backend/` directory (you can copy `.env.example`):
 
-You can use `backend/.env.example` as a reference.
+```bash
+cp .env.example .env
+```
+
+Set the required variables:
 
 ```env
 PORT=5000
 MONGO_URL=mongodb://localhost:27017/password-manager
-JWT_SECRET=your_long_random_jwt_secret
+JWT_SECRET=your_super_secret_jwt_key
 ENCRYPTION_KEY=your_64_character_hex_encryption_key
 FRONTEND_URL=http://localhost:5173
+NODE_ENV=development
 ```
 
-Generate secure values for the secrets:
+> 💡 **Generate secure secrets using Node.js:**
+>
+> ```bash
+> # 64-character (32-byte) hex ENCRYPTION_KEY
+> node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+>
+> # Secure JWT_SECRET
+> node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+> ```
 
-**Generate ENCRYPTION_KEY:**
+#### Start the Backend Server
 
 ```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+cd backend && npm install && npm run dev
 ```
 
-**Generate JWT_SECRET:**
+The backend starts at `http://localhost:5000`.
+
+---
+
+### 3. Frontend Setup
+
+Open a separate terminal and navigate to the `Frontend` directory:
 
 ```bash
-node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+cd Frontend
+npm install
 ```
 
-> ⚠️ Important: Keep your environment variables private. Never commit your `.env` file to GitHub. Back up your encryption key securely. If the key is lost or changed, previously stored credentials may become permanently undecryptable.
+#### Configure Frontend Environment Variables (Optional)
 
-### 5. Run the Backend
+Create a `.env` file in the `Frontend/` directory:
 
-From the `backend` directory:
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+#### Start the Frontend Development Server
 
 ```bash
-npm run dev
+cd Frontend && npm install && npm run dev
 ```
 
-The backend runs at:
-
-```text
-http://localhost:5000
-```
-
-### 6. Run the Frontend
-
-Open a new terminal in the project root:
-
-```bash
-npm run dev
-```
-
-The frontend runs at:
-
+The application will be accessible at:
 ```text
 http://localhost:5173
 ```
 
-Open the frontend URL in your browser, register an account, log in, and start managing your credentials.
+---
 
 ## 📡 API Reference
 
-All authentication and password routes are prefixed with `/api/auth`.
+All routes are mounted under `/api/auth`.
 
-| Method | Endpoint | Description | Authentication |
+| Method | Endpoint | Description | Protection |
 |---|---|---|---|
-| POST | `/register` | Register a new user | Public |
-| POST | `/login` | Authenticate user | Public |
-| POST | `/logout` | Clear session cookie | Public |
-| GET | `/profile` | Get current user profile | Required |
-| POST | `/create` | Save a new credential | Required |
-| GET | `/get` | Retrieve user's credentials | Required |
-| PUT | `/update/:id` | Update a saved credential | Required |
-| DELETE | `/delete/:id` | Delete a saved credential | Required |
+| `POST` | `/register` | Register user account (Rate limited: 10/15min) | Public |
+| `POST` | `/login` | Authenticate and issue HttpOnly cookie (Rate limited: 10/15min) | Public |
+| `POST` | `/logout` | Clear authentication cookie | Public |
+| `GET` | `/profile` | Retrieve authenticated user profile | JWT Cookie Required |
+| `POST` | `/create` | Encrypt & save new credential | JWT Cookie Required |
+| `GET` | `/get` | Retrieve & decrypt user credentials | JWT Cookie Required |
+| `PUT` | `/update/:id` | Update credential (verified against user ID) | JWT Cookie Required |
+| `DELETE` | `/delete/:id` | Delete credential (verified against user ID) | JWT Cookie Required |
 
-## 🔮 Future Improvements
+---
 
-- Move hardcoded API URLs to environment-based configuration.
-- Add rate limiting for authentication endpoints.
-- Add stronger password validation and password-strength policies.
-- Implement a password generator.
-- Add a password strength meter.
-- Implement two-factor authentication (2FA).
-- Explore client-side encryption and a zero-knowledge architecture.
-- Deploy the application with production-ready HTTPS and cookie configuration.
+## 🔮 Future Enhancements
+
+- **Two-Factor Authentication (2FA):** Time-based one-time passwords (TOTP) via authenticator apps.
+- **Client-Side Zero-Knowledge Encryption:** Deriving encryption keys client-side via PBKDF2/Argon2id and Web Crypto API.
+- **Encrypted Vault Export / Import:** Secure password export in password-protected JSON/CSV format.
+- **Breach Monitoring:** HaveIBeenPwned API integration to alert users about compromised credentials.
+
+---
 
 ## 👨‍💻 Author
 
-**Aakash Sharan**
+**Aakash Sharan**  
+GitHub: [@aakashsharan05-cmd](https://github.com/aakashsharan05-cmd)
 
-- GitHub: [@aakashsharan05-cmd](https://github.com/aakashsharan05-cmd)
+---
 
 ## 📄 License
 
-This project is open-source. A license has not yet been specified.
+This project is licensed under the MIT License.

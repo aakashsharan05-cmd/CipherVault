@@ -4,13 +4,13 @@ import { FaShieldAlt, FaSignOutAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { API_URL } from "../config";
 
-const Navbar = ({ user, setUser }) => {
+const Navbar = ({ user, setUser, authLoading }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -18,8 +18,18 @@ const Navbar = ({ user, setUser }) => {
       }
     };
 
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setShowDropdown(false);
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   // =========================
@@ -52,6 +62,7 @@ const Navbar = ({ user, setUser }) => {
           {/* Brand Logo */}
           <Link
             to="/"
+            onClick={() => setShowDropdown(false)}
             className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-lg p-1"
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/25 ring-1 ring-white/20 group-hover:scale-105 transition-transform">
@@ -70,11 +81,14 @@ const Navbar = ({ user, setUser }) => {
 
           {/* Navigation / User Section */}
           <div className="flex items-center gap-3 sm:gap-4">
-            {user ? (
+            {authLoading ? (
+              <div className="w-24 h-9 bg-slate-800/60 rounded-xl animate-pulse"></div>
+            ) : user ? (
               <>
                 <Link
                   to="/"
-                  className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                  onClick={() => setShowDropdown(false)}
+                  className={`text-sm font-medium px-3.5 py-2 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                     location.pathname === "/"
                       ? "text-white bg-slate-800/90 border border-slate-700/60"
                       : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
@@ -89,6 +103,7 @@ const Navbar = ({ user, setUser }) => {
                     onClick={() => setShowDropdown((prev) => !prev)}
                     className="flex items-center gap-2.5 p-1 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     aria-label="User menu"
+                    aria-expanded={showDropdown}
                   >
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-bold text-sm flex items-center justify-center shadow-inner">
                       {user.username.charAt(0).toUpperCase()}
@@ -117,7 +132,7 @@ const Navbar = ({ user, setUser }) => {
 
                       <div className="py-2.5 text-xs text-slate-400 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span>AES-256 Vault Active</span>
+                        <span>AES-256-GCM Encrypted Vault</span>
                       </div>
 
                       <button
@@ -132,11 +147,11 @@ const Navbar = ({ user, setUser }) => {
                 </div>
               </>
             ) : (
-              /* Real navigation for logged out visitors */
+              /* Navigation for logged out visitors */
               <div className="flex items-center gap-2 sm:gap-3">
                 <Link
                   to="/login"
-                  className={`text-sm font-medium px-3.5 py-2 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  className={`text-sm font-medium px-3.5 py-2 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                     location.pathname === "/login"
                       ? "text-white bg-slate-800 border border-slate-700"
                       : "text-slate-300 hover:text-white hover:bg-slate-800/60"
@@ -146,7 +161,7 @@ const Navbar = ({ user, setUser }) => {
                 </Link>
                 <Link
                   to="/register"
-                  className="text-sm font-semibold px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="text-sm font-semibold px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 >
                   Get Started
                 </Link>
