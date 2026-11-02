@@ -17,6 +17,7 @@ import {
   FaShieldAlt,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { API_URL } from "../config";
 
 const Manager = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +40,7 @@ const Manager = () => {
   // =========================
   const getpassword = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/get", {
+      const res = await fetch(`${API_URL}/api/auth/get`, {
         method: "GET",
         credentials: "include",
       });
@@ -116,7 +117,7 @@ const Manager = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/create", {
+      const res = await fetch(`${API_URL}/api/auth/create`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -184,7 +185,7 @@ const Manager = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/auth/update/${editingId}`,
+        `${API_URL}/api/auth/update/${editingId}`,
         {
           method: "PUT",
           credentials: "include",
@@ -229,7 +230,7 @@ const Manager = () => {
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/auth/delete/${id}`, {
+      const res = await fetch(`${API_URL}/api/auth/delete/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

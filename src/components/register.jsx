@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaShieldAlt, FaUser, FaEnvelope, FaLock, FaArrowRight } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { API_URL } from "../config";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -21,22 +22,41 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      form.username.trim() === "" ||
-      form.email.trim() === "" ||
-      form.password.trim() === ""
-    ) {
-      toast.warn("Please fill in all required fields.");
+    const trimmedUsername = form.username.trim();
+    const trimmedEmail = form.email.trim();
+
+    if (!trimmedUsername || !trimmedEmail || !form.password) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    if (trimmedUsername.length < 3 || trimmedUsername.length > 30) {
+      toast.error("Username must be between 3 and 30 characters.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmedEmail)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    if (form.password.length < 8 || form.password.length > 128) {
+      toast.error("Password must be between 8 and 128 characters.");
       return;
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          username: trimmedUsername,
+          email: trimmedEmail,
+          password: form.password,
+        }),
       });
 
       const data = await res.json();

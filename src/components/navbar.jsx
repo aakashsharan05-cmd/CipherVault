@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaShieldAlt, FaSignOutAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { API_URL } from "../config";
 
 const Navbar = ({ user, setUser }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -26,7 +27,7 @@ const Navbar = ({ user, setUser }) => {
   // =========================
   const handleLogout = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/logout", {
+      const res = await fetch(`${API_URL}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });

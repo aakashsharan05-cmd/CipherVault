@@ -10,6 +10,7 @@ import Footer from "./components/footer";
 import Manager from "./components/manager";
 import Register from "./components/register";
 import Login from "./components/login";
+import { API_URL } from "./config";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -19,7 +20,7 @@ function App() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/auth/profile", {
+        const res = await fetch(`${API_URL}/api/auth/profile`, {
           method: "GET",
           credentials: "include",
         });
