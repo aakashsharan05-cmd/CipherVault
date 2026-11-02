@@ -10,7 +10,8 @@ import Footer from "./components/footer";
 import Manager from "./components/manager";
 import Register from "./components/register";
 import Login from "./components/login";
-import { API_URL } from "./config";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 function App() {
   const [user, setUser] = useState(null);
