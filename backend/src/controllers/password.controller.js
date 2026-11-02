@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const passwordModel = require("../models/password.model");
-const { encrypt, decrypt } = require("../utlis/encryption");
+const { encrypt, decrypt } = require("../utils/encryption");
 
 function validatePasswordInput(data) {
     const { title, url, username, password } = data;
