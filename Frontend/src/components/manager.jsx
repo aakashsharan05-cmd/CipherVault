@@ -639,7 +639,7 @@ const Manager = ({ user, setUser, authLoading }) => {
           ) : (
             <>
               <FaPlus className="text-xs" />
-              <span>{editingId ? "Update Credential" : "+ Add credential"}</span>
+              <span>{editingId ? "Update Credential" : " Add credential"}</span>
             </>
           )}
         </button>
