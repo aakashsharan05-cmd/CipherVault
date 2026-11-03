@@ -19,30 +19,34 @@ const {
     deletePassword
 } = require("../controllers/password.controller");
 
-const authLimiter = rateLimit({
+const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 10,
+    limit: 10,
+    skipSuccessfulRequests: true,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
-        message: "Too many attempts, please try again after 15 minutes"
+        message: "Too many login attempts, please try again after 15 minutes"
     }
 });
 
-router.post("/register", authLimiter, register);
+const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    limit: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        message: "Too many registration attempts, please try again after an hour"
+    }
+});
 
-router.post("/login", authLimiter, login);
-
+router.post("/register", registerLimiter, register);
+router.post("/login", loginLimiter, login);
 router.get("/profile", authUser, getProfile);
-
 router.post("/logout", logout);
-
 router.post("/create", authUser, createPassword);
-
 router.get("/get", authUser, getPassword);
-
 router.put("/update/:id", authUser, updatePassword);
-
 router.delete("/delete/:id", authUser, deletePassword);
 
 module.exports = router;

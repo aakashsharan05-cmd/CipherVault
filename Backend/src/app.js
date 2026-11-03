@@ -13,14 +13,19 @@ if (process.env.NODE_ENV === "production") {
 
 app.use(helmet());
 
-const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    "http://localhost:5173",
-    "http://127.0.0.1:5173"
-].filter(Boolean);
-
 app.use(cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            process.env.FRONTEND_URL,
+            ...(process.env.NODE_ENV !== "production" ? ["http://localhost:5173", "http://127.0.0.1:5173"] : [])
+        ].filter(Boolean);
+
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(null, false);
+        }
+    },
     credentials: true
 }));
 
