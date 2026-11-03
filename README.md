@@ -1,15 +1,58 @@
 # 🔐 CipherVault — Secure Password Manager
 
-<!-- [Live Demo Placeholder] -->
-<!-- Live Demo: https://your-demo-url.example.com -->
+<p>
+  <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-green.svg">
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white">
+  <img alt="Express 5" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
+  <img alt="MongoDB with Mongoose 9" src="https://img.shields.io/badge/MongoDB-Mongoose%209-47A248?logo=mongodb&logoColor=white">
+  <img alt="Node 20.19 or later" src="https://img.shields.io/badge/Node-%E2%89%A5%2020.19-339933?logo=node.js&logoColor=white">
+  <img alt="Encryption: AES-256-GCM" src="https://img.shields.io/badge/Encryption-AES--256--GCM-6366f1">
+</p>
 
-<!-- [Screenshots Placeholder] -->
-<!-- ![CipherVault Desktop Dashboard](./docs/screenshots/dashboard.png) -->
-<!-- ![CipherVault Mobile View](./docs/screenshots/mobile.png) -->
+<!-- Live Demo: add your deployed link here once it is live -->
 
 CipherVault is a security-focused full-stack MERN password manager designed to help users securely store and manage their website credentials. It leverages **server-side AES-256-GCM authenticated encryption** to protect stored passwords, **bcryptjs** for credential hashing, **JWT authentication with HTTP-only cookies** for session control, **Helmet** for HTTP security headers, and dedicated **rate limiting** on authentication routes to guard against brute-force attacks.
 
 > ℹ️ **Architectural Disclosure:** CipherVault uses **server-side authenticated encryption (AES-256-GCM)** with user-isolated vaults. It is **not** a zero-knowledge password manager; encryption keys and decryption operations reside server-side in protected environment variables.
+
+---
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="CipherVault dashboard on desktop listing six saved credentials with masked passwords" width="100%">
+  <br><sub><b>Vault dashboard</b> — passwords stay masked until revealed; search, copy, edit and delete per entry</sub>
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/landing.png" alt="CipherVault landing page"></td>
+    <td width="50%"><img src="docs/screenshots/login.png" alt="CipherVault sign-in page"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub><b>Landing page</b></sub></td>
+    <td align="center"><sub><b>Sign in</b></sub></td>
+  </tr>
+</table>
+
+<p align="center">
+  <img src="docs/screenshots/add-credential.png" alt="Add credential form with the cryptographic password generator and strength meter open" width="100%">
+  <br><sub><b>Add a credential</b> — built-in generator (<code>window.crypto</code>) with live strength meter</sub>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/delete-modal.png" alt="Accessible delete confirmation dialog" width="560">
+  <br><sub><b>Delete confirmation</b> — <code>alertdialog</code> with Escape-to-close and focus management</sub>
+</p>
+
+### 📱 Mobile (390 px)
+
+<p align="center">
+  <img src="docs/screenshots/mobile-dashboard.png" alt="CipherVault vault on a phone" width="260">
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/screenshots/mobile-add.png" alt="Add credential form on a phone" width="260">
+  <br><sub><b>Responsive vault</b> and <b>add-credential form</b></sub>
+</p>
 
 ---
 
@@ -119,6 +162,8 @@ CipherVault/
 │           ├── manager.jsx           # Vault dashboard, generator, strength meter, CRUD
 │           ├── login.jsx             # Secure login form with validation
 │           └── register.jsx          # User registration form with validation
+├── docs/
+│   └── screenshots/                  # Images used in this README
 ├── LICENSE                           # MIT License
 ├── .gitignore
 └── README.md
@@ -132,7 +177,7 @@ Follow these steps to run CipherVault locally.
 
 ### Prerequisites
 
-- Node.js 18 or later
+- Node.js 20.19+ (or 22.12+): required by Vite 8, ESLint 10 and Mongoose 9
 - npm
 - MongoDB (local installation or MongoDB Atlas URI)
 
