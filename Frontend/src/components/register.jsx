@@ -63,7 +63,7 @@ const Register = () => {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
         toast.success("Account created successfully! Please sign in.");
@@ -162,7 +162,7 @@ const Register = () => {
                 htmlFor="register-password"
                 className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2"
               >
-                Master Password
+                Password
               </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">

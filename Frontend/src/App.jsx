@@ -10,8 +10,7 @@ import Footer from "./components/footer";
 import Manager from "./components/manager";
 import Register from "./components/register";
 import Login from "./components/login";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from "./config";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -29,7 +28,7 @@ function App() {
         });
 
         if (res.ok) {
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           if (isMounted) {
             setUser(data.user);
           }
@@ -51,16 +50,16 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 relative overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 relative">
       {/* Ambient background decoration */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-gradient-to-b from-indigo-500/10 via-violet-500/5 to-transparent blur-3xl opacity-70"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-250 h-100 bg-linear-to-b from-indigo-500/10 via-violet-500/5 to-transparent blur-3xl opacity-70"></div>
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl"></div>
         <div className="absolute top-1/3 -left-40 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl"></div>
       </div>
 
       <ToastContainer
-        position="top-right"
+        position="bottom-right"
         autoClose={3500}
         hideProgressBar={false}
         newestOnTop
@@ -74,11 +73,11 @@ function App() {
 
       <Navbar user={user} setUser={setUser} authLoading={authLoading} />
 
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col w-full min-w-0">
         <Routes>
           <Route
             path="/"
-            element={<Manager user={user} authLoading={authLoading} />}
+            element={<Manager user={user} setUser={setUser} authLoading={authLoading} />}
           />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
