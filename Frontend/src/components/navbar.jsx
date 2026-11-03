@@ -65,7 +65,7 @@ const Navbar = ({ user, setUser, authLoading }) => {
             onClick={() => setShowDropdown(false)}
             className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-lg p-1"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/25 ring-1 ring-white/20 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-indigo-600 via-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/25 ring-1 ring-white/20 group-hover:scale-105 transition-transform">
               <FaShieldAlt className="text-xl" />
             </div>
             <div className="flex flex-col">
@@ -105,10 +105,10 @@ const Navbar = ({ user, setUser, authLoading }) => {
                     aria-label="User menu"
                     aria-expanded={showDropdown}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-bold text-sm flex items-center justify-center shadow-inner">
+                    <div className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-500 to-violet-600 text-white font-bold text-sm flex items-center justify-center shadow-inner">
                       {user.username.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-sm font-medium text-slate-200 hidden md:block max-w-[120px] truncate">
+                    <span className="text-sm font-medium text-slate-200 hidden md:block max-w-30 truncate">
                       {user.username}
                     </span>
                   </button>
@@ -117,7 +117,7 @@ const Navbar = ({ user, setUser, authLoading }) => {
                   {showDropdown && (
                     <div className="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl py-3 px-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                       <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-bold text-base flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-linear-to-br from-indigo-500 to-violet-600 text-white font-bold text-base flex items-center justify-center">
                           {user.username.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex flex-col min-w-0">
@@ -161,7 +161,7 @@ const Navbar = ({ user, setUser, authLoading }) => {
                 </Link>
                 <Link
                   to="/register"
-                  className="text-sm font-semibold px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  className="text-sm font-semibold px-4 py-2 rounded-xl bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 >
                   Get Started
                 </Link>

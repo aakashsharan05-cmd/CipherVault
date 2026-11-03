@@ -16,7 +16,8 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 async function register(req, res) {
     try {
-        const { username, email, password } = req.body;
+        const body = req.body ?? {};
+        const { username, email, password } = body;
 
         if (
             typeof username !== "string" ||
@@ -87,7 +88,8 @@ async function register(req, res) {
 
 async function login(req, res) {
     try {
-        const { username, email, password } = req.body;
+        const body = req.body ?? {};
+        const { username, email, password } = body;
 
         if (typeof password !== "string") {
             return res.status(400).json({

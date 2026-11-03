@@ -3,7 +3,7 @@ const passwordModel = require("../models/password.model");
 const { encrypt, decrypt } = require("../utils/encryption");
 
 function validatePasswordInput(data) {
-    const { title, url, username, password } = data;
+    const { title, url, username, password } = data ?? {};
 
     if (
         typeof title !== "string" ||
@@ -18,21 +18,37 @@ function validatePasswordInput(data) {
     const trimmedUrl = url.trim();
     const trimmedUsername = username.trim();
 
-    const lowerUrl = trimmedUrl.toLowerCase();
-    if (
-        lowerUrl.startsWith("javascript:") ||
-        lowerUrl.startsWith("data:") ||
-        lowerUrl.startsWith("vbscript:")
-    ) {
-        return null;
-    }
-
     if (
         trimmedTitle.length === 0 || trimmedTitle.length > 100 ||
         trimmedUrl.length === 0 || trimmedUrl.length > 2048 ||
         trimmedUsername.length === 0 || trimmedUsername.length > 100 ||
         password.length === 0 || password.length > 500
     ) {
+        return null;
+    }
+
+    // Reject strings containing whitespace or control characters
+    for (let i = 0; i < trimmedUrl.length; i++) {
+        const code = trimmedUrl.charCodeAt(i);
+        if (code <= 32 || code === 127) {
+            return null;
+        }
+    }
+    if (/\s/.test(trimmedUrl)) {
+        return null;
+    }
+
+    // Parse with new URL(value.includes("://") ? value : "https://" + value)
+    try {
+        const parsed = new URL(trimmedUrl.includes("://") ? trimmedUrl : "https://" + trimmedUrl);
+        if (
+            (parsed.protocol !== "http:" && parsed.protocol !== "https:") ||
+            !parsed.hostname ||
+            parsed.hostname.length === 0
+        ) {
+            return null;
+        }
+    } catch {
         return null;
     }
 
@@ -46,7 +62,8 @@ function validatePasswordInput(data) {
 
 async function createPassword(req, res) {
     try {
-        const validated = validatePasswordInput(req.body);
+        const body = req.body ?? {};
+        const validated = validatePasswordInput(body);
         if (!validated) {
             return res.status(400).json({
                 message: "All fields are required and must be valid non-empty strings"
@@ -121,7 +138,8 @@ async function updatePassword(req, res) {
             });
         }
 
-        const validated = validatePasswordInput(req.body);
+        const body = req.body ?? {};
+        const validated = validatePasswordInput(body);
         if (!validated) {
             return res.status(400).json({
                 message: "All fields are required and must be valid non-empty strings"
